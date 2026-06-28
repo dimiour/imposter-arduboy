@@ -1,5 +1,6 @@
 #pragma once
 #include "global.h"
+#include "settings.h"
 #include "ui.h"
 #include "words.h"
 
