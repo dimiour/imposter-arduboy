@@ -9,3 +9,12 @@ extern Arduboy2 arduboy;
 using f16 = int16_t;
 
 using p8 = int8_t;
+
+/// The three high-level phases of the game.
+/// Each phase struct exposes a `tick()` that renders itself and
+/// returns the phase that should run on the next frame.
+enum class Phase : uint8_t {
+    Settings, ///< Configure players / imposters (drum roll picker)
+    Reveals,  ///< Pass-and-play role reveal (hold-to-fill circle)
+    Play,     ///< Discussion + answer reveal
+};

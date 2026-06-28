@@ -4,47 +4,55 @@ ARDUBOY_NO_USB;
 Arduboy2 arduboy;
 
 #include "settings.h"
+#include "reveals.h"
+#include "play.h"
 
-enum GameState {
-  STATE_MENU,
-  STATE_REVEALS,
-  STATE_PAUSED,
-  STATE_GAME_OVER,
-};
+Phase phase = Phase::Settings;
 
-GameState state = STATE_MENU;
 Settings settings;
+Reveals reveals;
+Play play;
+
+// Initialize a phase as we transition into it.
+static void enter(Phase next) {
+    switch (next) {
+        case Phase::Settings:
+            settings.reset();
+            break;
+        case Phase::Reveals:
+            reveals.begin(settings.players, settings.imposters);
+            break;
+        case Phase::Play:
+            play.begin(reveals.playerCount, reveals.imposterCount,
+                       reveals.wordIndex, reveals.isImposter);
+            break;
+    }
+    phase = next;
+}
 
 void setup() {
-  arduboy.boot();
-  arduboy.setFrameRate(60);
+    arduboy.boot();
+    arduboy.setFrameRate(60);
+    arduboy.initRandomSeed();
 
-  settings.init();
+    pie::init();
+    settings.reset();
 }
 
 void loop() {
-  if (!arduboy.nextFrame()) return;
+    if (!arduboy.nextFrame()) return;
 
-  arduboy.pollButtons();
-  arduboy.clear();
+    arduboy.pollButtons();
+    arduboy.clear();
 
-  switch (state) {
-    case STATE_MENU:
-        settings.update();
-      break;
-    case STATE_REVEALS:
+    Phase next = phase;
+    switch (phase) {
+        case Phase::Settings: next = settings.tick(); break;
+        case Phase::Reveals:  next = reveals.tick();  break;
+        case Phase::Play:     next = play.tick();     break;
+    }
 
-      break;
-    case STATE_PAUSED:
+    if (next != phase) enter(next);
 
-      break;
-    case STATE_GAME_OVER:
-
-      break;
-  }
-  // do the code
-  arduboy.print(F("Hello, world!"));
-
-
-  arduboy.display();
+    arduboy.display();
 }
