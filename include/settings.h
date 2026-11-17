@@ -37,19 +37,24 @@ struct Settings {
 
     uint8_t players = 4;
     uint8_t imposters = 1;
+    uint16_t frames = 0; ///< frame counter for random seed
 
     void reset() {
         pos = 0;
         vel = 0;
         target = ROW_PLAYERS;
+        frames = 0;
         btn::resetHold();
     }
 
     Phase tick() {
+        frames++;
         handleInput();
         physics();
         bool startGame = render();
         if (startGame) {
+            // Seed random with frame count for unpredictable word selection
+            randomSeed(frames);
             return Phase::Reveals;
         }
         return Phase::Settings;
