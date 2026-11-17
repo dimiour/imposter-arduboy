@@ -10,7 +10,7 @@ enum SettingRow : uint8_t {
     ROW_COUNT,
 };
 
-constexpr uint8_t MIN_PLAYERS = 2;
+constexpr uint8_t MIN_PLAYERS = 3;
 constexpr uint8_t MAX_PLAYERS = 10;
 
 /**

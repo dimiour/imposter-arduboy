@@ -11,7 +11,7 @@
  */
 namespace pie {
     constexpr uint8_t SEGMENTS = 48; ///< triangles in a full circle
-    constexpr uint8_t RADIUS = 22;   ///< px
+    constexpr uint8_t RADIUS = 15;   ///< px
 
     static int8_t px[SEGMENTS + 1];
     static int8_t py[SEGMENTS + 1];
