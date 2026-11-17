@@ -122,8 +122,8 @@ private:
             printCentered(cy - 4, buf);
         }
 
-        // Always show buttons; only A is active on START row
-        uint8_t result = btn::tick((target == ROW_START) ? "GO" : nullptr, nullptr);
-        return (result == 1 && target == ROW_START);
+        // Always show buttons; only B is active on START row
+        uint8_t result = btn::tick(nullptr, (target == ROW_START) ? "GO" : nullptr);
+        return (result == 2 && target == ROW_START);
     }
 };
