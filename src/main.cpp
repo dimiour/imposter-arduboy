@@ -35,7 +35,7 @@ void setup() {
     arduboy.setFrameRate(60);
     arduboy.initRandomSeed();
 
-    pie::init();
+    btn::init();
     settings.reset();
 }
 

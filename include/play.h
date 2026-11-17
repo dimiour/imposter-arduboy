@@ -27,37 +27,42 @@ struct Play {
         answerShown = false;
         frames = 0;
         for (uint8_t i = 0; i < MAX_PLAYERS; i++) isImposter[i] = imposterFlags[i];
+        btn::resetHold();
     }
 
     Phase tick() {
         frames++;
-
-        if (arduboy.justPressed(A_BUTTON)) answerShown = true;
-        if (arduboy.justPressed(B_BUTTON)) return Phase::Settings;
-
-        answerShown ? renderAnswer() : renderDiscuss();
-        return Phase::Play;
+        return answerShown ? tickAnswer() : tickDiscuss();
     }
 
 private:
-    void renderDiscuss() {
-        printCentered(6, "DISCUSS", 2);
-        printCentered(26, "Who is faking?");
+    Phase tickDiscuss() {
+        // Vertically centered content (size 1 to fit in left 2/3)
+        printCentered(18, "DISCUSS");
+        printCentered(30, "Who is faking?");
 
         // Discussion clock (frames @ 60 fps -> mm:ss).
         uint16_t secs = frames / 60;
         char buf[8];
         snprintf(buf, sizeof(buf), "%u:%02u", secs / 60, secs % 60);
-        printCentered(38, buf);
+        printCentered(42, buf);
 
-        printCentered(54, "(A) REVEAL  (B) NEW");
+        uint8_t result = btn::tick("REVEAL", "NEW");
+        if (result == 1) {
+            answerShown = true;
+            btn::resetHold();
+        } else if (result == 2) {
+            return Phase::Settings;
+        }
+        return Phase::Play;
     }
 
-    void renderAnswer() {
+    Phase tickAnswer() {
+        // Vertically centered content (size 1 to fit in left 2/3)
         char word[9];
         copyWord(word, wordIndex);
-        printCentered(2, "THE WORD WAS");
-        printCentered(14, word, 2);
+        printCentered(18, "THE WORD WAS");
+        printCentered(30, word);
 
         // List the imposter player numbers, e.g. "IMPOSTERS: 2 5".
         char buf[22];
@@ -67,8 +72,12 @@ private:
                 n += snprintf(buf + n, sizeof(buf) - n, " %u", i + 1);
             }
         }
-        printCentered(36, buf);
+        printCentered(42, buf);
 
-        printCentered(54, "(B) NEW ROUND");
+        uint8_t result = btn::tick(nullptr, "NEW");
+        if (result == 2) {
+            return Phase::Settings;
+        }
+        return Phase::Play;
     }
 };

@@ -42,13 +42,17 @@ struct Settings {
         pos = 0;
         vel = 0;
         target = ROW_PLAYERS;
+        btn::resetHold();
     }
 
     Phase tick() {
-        Phase next = handleInput();
+        handleInput();
         physics();
-        render();
-        return next;
+        bool startGame = render();
+        if (startGame) {
+            return Phase::Reveals;
+        }
+        return Phase::Settings;
     }
 
 private:
@@ -76,9 +80,7 @@ private:
                 break;
 
             case ROW_START:
-                if (arduboy.justPressed(A_BUTTON) || arduboy.justPressed(B_BUTTON)) {
-                    return Phase::Reveals;
-                }
+                // Handled in render via btn::tick
                 break;
         }
 
@@ -91,12 +93,15 @@ private:
         pos += vel;
     }
 
-    void render() {
-        // Selection window framing the centered row.
-        arduboy.drawRect(0, 32 - ROW_HEIGHT / 2, WIDTH, ROW_HEIGHT);
+    bool render() {
+        // Content vertically centered (screen center Y = 32)
+        constexpr int16_t CENTER_Y = 32;
+        
+        // Selection window framing the centered row (in left 2/3 content area).
+        arduboy.drawRect(0, CENTER_Y - ROW_HEIGHT / 2, layout::CONTENT_WIDTH, ROW_HEIGHT);
 
         for (uint8_t i = 0; i < ROW_COUNT; i++) {
-            int16_t cy = 32 + (int16_t)lroundf((i - pos) * ROW_HEIGHT);
+            int16_t cy = CENTER_Y + (int16_t)lroundf((i - pos) * ROW_HEIGHT);
             if (cy < 4 || cy > 60) continue; // off-screen row
 
             char buf[18];
@@ -116,5 +121,9 @@ private:
 
             printCentered(cy - 4, buf);
         }
+
+        // Always show buttons; only A is active on START row
+        uint8_t result = btn::tick((target == ROW_START) ? "GO" : nullptr, nullptr);
+        return (result == 1 && target == ROW_START);
     }
 };
